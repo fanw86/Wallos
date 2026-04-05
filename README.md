@@ -58,6 +58,7 @@ Wallos is a powerful, open-source, and self-hostable web application designed to
 - Notifications:  Wallos supports multiple notification methods (email, discord, pushover, telegram, gotify and webhooks). Get notified about your upcoming payments.
 - Multi Language support.
 - OIDC with OAuth
+- Apache Guacamole SSO redirect links for remote-access subscriptions
 - AI Recommendations with ChatGPT, Gemini or Local Ollama
 
 ## Demo
@@ -207,6 +208,15 @@ If you want to trigger an Update of the exchange rates, change your main currenc
 ## OIDC
 
 OIDC can be enabled on the Admin page and can be used with providers that support OAuth.
+
+## Guacamole SSO redirect integration
+
+Wallos can store remote-access metadata on a subscription and launch Apache Guacamole through a configurable redirect template. Configure both Wallos and Guacamole against the same OIDC provider, then set the Guacamole base URL and launch template on the Admin page. A few useful template placeholders are:
+
+- `{base_url}`
+- `{connection_identifier}` / `{connection_identifier_encoded}`
+- `{protocol}`, `{host}`, `{port}`, `{username}`
+- `{quickconnect_uri}` / `{quickconnect_uri_encoded}`
 
 ## API Documentation
 

@@ -19,6 +19,47 @@ function toggleNotificationDays() {
   notifyDaysBefore.disabled = !notifyCheckbox.checked;
 }
 
+function getDefaultRemotePort(protocol) {
+  switch (protocol) {
+    case "rdp":
+      return 3389;
+    case "vnc":
+      return 5900;
+    case "telnet":
+      return 23;
+    case "ssh":
+    default:
+      return 22;
+  }
+}
+
+function toggleRemoteAccessFields() {
+  const remoteAccessEnabled = document.querySelector("#remote_access_enabled");
+  const remoteFields = document.querySelector("#remote_access_fields");
+  remoteFields.classList.toggle("hide", !remoteAccessEnabled.checked);
+}
+
+function applyRemoteProtocolDefaults() {
+  const remoteProtocol = document.querySelector("#remote_protocol");
+  const remotePort = document.querySelector("#remote_port");
+
+  if (!remoteProtocol || !remotePort) {
+    return;
+  }
+
+  if (!remotePort.value || remotePort.dataset.autofill === "true") {
+    remotePort.value = getDefaultRemotePort(remoteProtocol.value);
+    remotePort.dataset.autofill = "true";
+  }
+}
+
+function markRemotePortCustomized() {
+  const remotePort = document.querySelector("#remote_port");
+  if (remotePort) {
+    remotePort.dataset.autofill = "false";
+  }
+}
+
 function resetForm() {
   const id = document.querySelector("#id");
   id.value = "";
@@ -35,6 +76,13 @@ function resetForm() {
   submitButton.disabled = false;
   const autoRenew = document.querySelector("#auto_renew");
   autoRenew.checked = true;
+  const remoteAccessEnabled = document.querySelector("#remote_access_enabled");
+  remoteAccessEnabled.checked = false;
+  const remoteProtocol = document.querySelector("#remote_protocol");
+  remoteProtocol.value = "ssh";
+  const remotePort = document.querySelector("#remote_port");
+  remotePort.value = getDefaultRemotePort("ssh");
+  remotePort.dataset.autofill = "true";
   const startDate = document.querySelector("#start_date");
   startDate.value = new Date().toISOString().split('T')[0];
   const notifyDaysBefore = document.querySelector("#notify_days_before");
@@ -45,6 +93,7 @@ function resetForm() {
   replacementSubscription.classList.add("hide");
   const form = document.querySelector("#subs-form");
   form.reset();
+  toggleRemoteAccessFields();
   closeLogoSearch();
   const deleteButton = document.querySelector("#deletesub");
   deleteButton.style = 'display: none';
@@ -95,6 +144,21 @@ function fillEditFormFields(subscription) {
   inactive.checked = subscription.inactive;
   const url = document.querySelector("#url");
   url.value = subscription.url;
+
+  const remoteAccessEnabled = document.querySelector("#remote_access_enabled");
+  remoteAccessEnabled.checked = subscription.remote_access_enabled === 1;
+  const remoteProtocol = document.querySelector("#remote_protocol");
+  remoteProtocol.value = subscription.remote_protocol || "ssh";
+  const remoteHost = document.querySelector("#remote_host");
+  remoteHost.value = subscription.remote_host || "";
+  const remotePort = document.querySelector("#remote_port");
+  remotePort.value = subscription.remote_port || getDefaultRemotePort(remoteProtocol.value);
+  remotePort.dataset.autofill = "false";
+  const remoteUsername = document.querySelector("#remote_username");
+  remoteUsername.value = subscription.remote_username || "";
+  const guacamoleConnectionIdentifier = document.querySelector("#guacamole_connection_identifier");
+  guacamoleConnectionIdentifier.value = subscription.guacamole_connection_identifier || "";
+  toggleRemoteAccessFields();
 
   const autoRenew = document.querySelector("#auto_renew");
   if (autoRenew) {
@@ -168,6 +232,37 @@ function addSubscription() {
   modal.classList.add("is-open");
   const body = document.querySelector('body');
   body.classList.add('no-scroll');
+}
+
+function openRemoteAccess(event, id) {
+  event.stopPropagation();
+  event.preventDefault();
+
+  fetch("endpoints/subscription/launch_guacamole.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": window.csrfToken,
+    },
+    body: JSON.stringify({ id: id }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.success || !data.url) {
+        showErrorMessage(data.message || translate("guacamole_launch_not_available"));
+        return;
+      }
+
+      if (data.open_in_new_tab === 1) {
+        window.open(data.url, "_blank", "noopener");
+      } else {
+        window.location.href = data.url;
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      showErrorMessage(translate("guacamole_launch_not_available"));
+    });
 }
 
 function closeAddSubscription() {

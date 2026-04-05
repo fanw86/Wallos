@@ -4,6 +4,7 @@ require_once '../../includes/connect_endpoint.php';
 require_once '../../includes/validate_endpoint.php';
 require_once '../../includes/inputvalidation.php';
 require_once '../../includes/getsettings.php';
+require_once '../../includes/guacamole.php';
 
 if (!file_exists('../../images/uploads/logos')) {
     mkdir('../../images/uploads/logos', 0777, true);
@@ -236,6 +237,36 @@ $notifyDaysBefore = $_POST['notify_days_before'];
 $inactive = isset($_POST['inactive']) ? true : false;
 $cancellationDate = $_POST['cancellation_date'] ?? null;
 $replacementSubscriptionId = $_POST['replacement_subscription_id'];
+$remoteAccessEnabled = isset($_POST['remote_access_enabled']) ? 1 : 0;
+$remoteProtocol = isset($_POST['remote_protocol']) ? strtolower(validate($_POST['remote_protocol'])) : 'ssh';
+$remoteHost = isset($_POST['remote_host']) ? validate($_POST['remote_host']) : '';
+$remotePort = isset($_POST['remote_port']) ? (int) $_POST['remote_port'] : 0;
+$remoteUsername = isset($_POST['remote_username']) ? validate($_POST['remote_username']) : '';
+$guacamoleConnectionIdentifier = isset($_POST['guacamole_connection_identifier']) ? validate($_POST['guacamole_connection_identifier']) : '';
+
+$allowedRemoteProtocols = ['ssh', 'rdp', 'vnc', 'telnet'];
+if (!in_array($remoteProtocol, $allowedRemoteProtocols)) {
+    $remoteProtocol = 'ssh';
+}
+
+if ($remotePort < 1 || $remotePort > 65535) {
+    $remotePort = getDefaultRemotePort($remoteProtocol);
+}
+
+if ($remoteAccessEnabled === 0) {
+    $remoteHost = '';
+    $remoteUsername = '';
+    $guacamoleConnectionIdentifier = '';
+    $remoteProtocol = 'ssh';
+    $remotePort = getDefaultRemotePort($remoteProtocol);
+}
+
+if ($remoteAccessEnabled === 1 && $remoteHost === '' && $guacamoleConnectionIdentifier === '') {
+    die(json_encode([
+        "success" => false,
+        "message" => translate('fill_all_fields', $i18n)
+    ]));
+}
 
 if ($replacementSubscriptionId == 0 || $inactive == 0) {
     $replacementSubscriptionId = null;
@@ -259,12 +290,14 @@ if (!$isEdit) {
                         name, logo, price, currency_id, next_payment, cycle, frequency, notes, 
                         payment_method_id, payer_user_id, category_id, notify, inactive, url, 
                         notify_days_before, user_id, cancellation_date, replacement_subscription_id,
-                        auto_renew, start_date
+                        auto_renew, start_date, remote_access_enabled, remote_protocol, remote_host,
+                        remote_port, remote_username, guacamole_connection_identifier
                     ) VALUES (
                         :name, :logo, :price, :currencyId, :nextPayment, :cycle, :frequency, :notes, 
                         :paymentMethodId, :payerUserId, :categoryId, :notify, :inactive, :url, 
                         :notifyDaysBefore, :userId, :cancellationDate, :replacement_subscription_id,
-                        :autoRenew, :startDate
+                        :autoRenew, :startDate, :remoteAccessEnabled, :remoteProtocol, :remoteHost,
+                        :remotePort, :remoteUsername, :guacamoleConnectionIdentifier
                     )";
 } else {
     $id = $_POST['id'];
@@ -286,7 +319,13 @@ if (!$isEdit) {
                         url = :url, 
                         notify_days_before = :notifyDaysBefore, 
                         cancellation_date = :cancellationDate, 
-                        replacement_subscription_id = :replacement_subscription_id";
+                        replacement_subscription_id = :replacement_subscription_id,
+                        remote_access_enabled = :remoteAccessEnabled,
+                        remote_protocol = :remoteProtocol,
+                        remote_host = :remoteHost,
+                        remote_port = :remotePort,
+                        remote_username = :remoteUsername,
+                        guacamole_connection_identifier = :guacamoleConnectionIdentifier";
 
     if ($logo != "") {
         $sql .= ", logo = :logo";
@@ -316,6 +355,12 @@ $stmt->bindParam(':inactive', $inactive, SQLITE3_INTEGER);
 $stmt->bindParam(':url', $url, SQLITE3_TEXT);
 $stmt->bindParam(':notifyDaysBefore', $notifyDaysBefore, SQLITE3_INTEGER);
 $stmt->bindParam(':cancellationDate', $cancellationDate, SQLITE3_TEXT);
+$stmt->bindParam(':remoteAccessEnabled', $remoteAccessEnabled, SQLITE3_INTEGER);
+$stmt->bindParam(':remoteProtocol', $remoteProtocol, SQLITE3_TEXT);
+$stmt->bindParam(':remoteHost', $remoteHost, SQLITE3_TEXT);
+$stmt->bindParam(':remotePort', $remotePort, SQLITE3_INTEGER);
+$stmt->bindParam(':remoteUsername', $remoteUsername, SQLITE3_TEXT);
+$stmt->bindParam(':guacamoleConnectionIdentifier', $guacamoleConnectionIdentifier, SQLITE3_TEXT);
 if ($isEdit) {
     $stmt->bindParam(':id', $id, SQLITE3_INTEGER);
 }

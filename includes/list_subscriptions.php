@@ -202,6 +202,14 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                         </button>
                         <?php
                     }
+                    if (!empty($subscription['remote_access_enabled'])) {
+                        ?>
+                        <button class="mobile-action-edit" onClick="openRemoteAccess(event, <?= $subscription['id'] ?>)">
+                            <i class="fa-solid fa-terminal"></i>
+                            <?= translate('open_console', $i18n) ?>
+                        </button>
+                        <?php
+                    }
                     ?>
                     <button class="mobile-action-edit" onClick="openEditSubscription(event, <?= $subscription['id'] ?>)">
                         <?php include $imagePath . "images/siteicons/svg/mobile-menu/edit.php"; ?>
@@ -306,6 +314,15 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                                 onClick="renewSubscription(event, <?= $subscription['id'] ?>)">
                                 <?php include $imagePath . "images/siteicons/svg/renew.php"; ?>
                                 <?= translate('renew', $i18n) ?>
+                            </li>
+                        <?php
+                        }
+                        if (!empty($subscription['remote_access_enabled'])) {
+                            ?>
+                            <li class="edit" title="<?= translate('open_console', $i18n) ?>"
+                                onClick="openRemoteAccess(event, <?= $subscription['id'] ?>)">
+                                <i class="fa-solid fa-terminal"></i>
+                                <?= translate('open_console', $i18n) ?>
                             </li>
                             <?php
                         }
