@@ -499,3 +499,42 @@ function saveOidcSettingsButton() {
       button.disabled = false;
     });
 }
+
+function saveGuacamoleSettingsButton() {
+  const button = document.getElementById("saveGuacamoleSettingsButton");
+  button.disabled = true;
+
+  const enabled = document.getElementById("guacamoleEnabled").checked ? 1 : 0;
+  const baseUrl = document.getElementById("guacamoleBaseUrl").value;
+  const launchUrlTemplate = document.getElementById("guacamoleLaunchUrlTemplate").value;
+  const openInNewTab = document.getElementById("guacamoleOpenInNewTab").checked ? 1 : 0;
+
+  const data = {
+    enabled: enabled,
+    baseUrl: baseUrl,
+    launchUrlTemplate: launchUrlTemplate,
+    openInNewTab: openInNewTab
+  };
+
+  fetch('endpoints/admin/saveguacamolesettings.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': window.csrfToken,
+    },
+    body: JSON.stringify(data)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showSuccessMessage(data.message);
+      } else {
+        showErrorMessage(data.message);
+      }
+      button.disabled = false;
+    })
+    .catch(error => {
+      showErrorMessage('Error:', error);
+      button.disabled = false;
+    });
+}

@@ -493,6 +493,54 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
     </div>
 
     <div class="form-group">
+      <div class="inline grow">
+        <input type="checkbox" id="remote_access_enabled" name="remote_access_enabled" onchange="toggleRemoteAccessFields()">
+        <label for="remote_access_enabled" class="grow"><?= translate('enable_remote_access', $i18n) ?></label>
+      </div>
+    </div>
+
+    <div id="remote_access_fields" class="hide">
+      <div class="form-group">
+        <div class="inline">
+          <div class="split33">
+            <label for="remote_protocol"><?= translate('remote_protocol', $i18n) ?></label>
+            <select id="remote_protocol" name="remote_protocol" onchange="applyRemoteProtocolDefaults()">
+              <option value="ssh">SSH</option>
+              <option value="rdp">RDP</option>
+              <option value="vnc">VNC</option>
+              <option value="telnet">Telnet</option>
+            </select>
+          </div>
+          <div class="split33">
+            <label for="remote_port"><?= translate('remote_port', $i18n) ?></label>
+            <input type="number" id="remote_port" name="remote_port" min="1" max="65535" autocomplete="off" value="22"
+              oninput="markRemotePortCustomized()">
+          </div>
+          <div class="split33">
+            <label for="remote_username"><?= translate('remote_username', $i18n) ?></label>
+            <input type="text" id="remote_username" name="remote_username" autocomplete="off" placeholder="<?= translate('remote_username', $i18n) ?>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <input type="text" id="remote_host" name="remote_host" autocomplete="off" placeholder="<?= translate('remote_host', $i18n) ?>">
+      </div>
+
+      <div class="form-group">
+        <input type="text" id="guacamole_connection_identifier" name="guacamole_connection_identifier" autocomplete="off"
+          placeholder="<?= translate('guacamole_connection_identifier', $i18n) ?>">
+      </div>
+
+      <div class="settings-notes">
+        <p>
+          <i class="fa-solid fa-circle-info"></i>
+          <?= translate('guacamole_connection_identifier_note', $i18n) ?>
+        </p>
+      </div>
+    </div>
+
+    <div class="form-group">
       <input type="text" id="notes" name="notes" autocomplete="off" placeholder="<?= translate('notes', $i18n) ?>">
     </div>
 

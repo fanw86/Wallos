@@ -19,7 +19,17 @@ if ($subscriptionToClone === false) {
     ]));
 }
 
-$query = "INSERT INTO subscriptions (name, logo, price, currency_id, next_payment, cycle, frequency, notes, payment_method_id, payer_user_id, category_id, notify, url, inactive, notify_days_before, user_id, cancellation_date, replacement_subscription_id) VALUES (:name, :logo, :price, :currency_id, :next_payment, :cycle, :frequency, :notes, :payment_method_id, :payer_user_id, :category_id, :notify, :url, :inactive, :notify_days_before, :user_id, :cancellation_date, :replacement_subscription_id)";
+$query = "INSERT INTO subscriptions (
+    name, logo, price, currency_id, next_payment, auto_renew, start_date, cycle, frequency, notes,
+    payment_method_id, payer_user_id, category_id, notify, url, inactive, notify_days_before, user_id,
+    cancellation_date, replacement_subscription_id, remote_access_enabled, remote_protocol, remote_host,
+    remote_port, remote_username, guacamole_connection_identifier
+) VALUES (
+    :name, :logo, :price, :currency_id, :next_payment, :auto_renew, :start_date, :cycle, :frequency, :notes,
+    :payment_method_id, :payer_user_id, :category_id, :notify, :url, :inactive, :notify_days_before, :user_id,
+    :cancellation_date, :replacement_subscription_id, :remote_access_enabled, :remote_protocol, :remote_host,
+    :remote_port, :remote_username, :guacamole_connection_identifier
+)";
 $cloneStmt = $db->prepare($query);
 $cloneStmt->bindValue(':name', $subscriptionToClone['name'], SQLITE3_TEXT);
 $cloneStmt->bindValue(':logo', $subscriptionToClone['logo'], SQLITE3_TEXT);
@@ -41,6 +51,12 @@ $cloneStmt->bindValue(':notify_days_before', $subscriptionToClone['notify_days_b
 $cloneStmt->bindValue(':user_id', $userId, SQLITE3_INTEGER);
 $cloneStmt->bindValue(':cancellation_date', $subscriptionToClone['cancellation_date'], SQLITE3_TEXT);
 $cloneStmt->bindValue(':replacement_subscription_id', $subscriptionToClone['replacement_subscription_id'], SQLITE3_INTEGER);
+$cloneStmt->bindValue(':remote_access_enabled', $subscriptionToClone['remote_access_enabled'] ?? 0, SQLITE3_INTEGER);
+$cloneStmt->bindValue(':remote_protocol', $subscriptionToClone['remote_protocol'] ?? 'ssh', SQLITE3_TEXT);
+$cloneStmt->bindValue(':remote_host', $subscriptionToClone['remote_host'] ?? '', SQLITE3_TEXT);
+$cloneStmt->bindValue(':remote_port', $subscriptionToClone['remote_port'] ?? 22, SQLITE3_INTEGER);
+$cloneStmt->bindValue(':remote_username', $subscriptionToClone['remote_username'] ?? '', SQLITE3_TEXT);
+$cloneStmt->bindValue(':guacamole_connection_identifier', $subscriptionToClone['guacamole_connection_identifier'] ?? '', SQLITE3_TEXT);
 
 if ($cloneStmt->execute()) {
     $response = [

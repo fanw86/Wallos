@@ -33,6 +33,12 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             $subscriptionData['notify_days_before'] = $row['notify_days_before'];
             $subscriptionData['cancellation_date'] = $row['cancellation_date'];
             $subscriptionData['replacement_subscription_id'] = $row['replacement_subscription_id'];
+            $subscriptionData['remote_access_enabled'] = (int) ($row['remote_access_enabled'] ?? 0);
+            $subscriptionData['remote_protocol'] = $row['remote_protocol'] ?? 'ssh';
+            $subscriptionData['remote_host'] = htmlspecialchars_decode($row['remote_host'] ?? "");
+            $subscriptionData['remote_port'] = (int) ($row['remote_port'] ?? 22);
+            $subscriptionData['remote_username'] = htmlspecialchars_decode($row['remote_username'] ?? "");
+            $subscriptionData['guacamole_connection_identifier'] = htmlspecialchars_decode($row['guacamole_connection_identifier'] ?? "");
 
             $subscriptionJson = json_encode($subscriptionData);
             header('Content-Type: application/json');

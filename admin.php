@@ -16,6 +16,9 @@ $stmt = $db->prepare('SELECT * FROM oauth_settings WHERE id = 1');
 $result = $stmt->execute();
 $oidcSettings = $result->fetchArray(SQLITE3_ASSOC);
 
+require_once 'includes/guacamole.php';
+$guacamoleSettings = getGuacamoleSettings($db);
+
 if ($oidcSettings === false) {
     // Table is empty or no row with id=1, set defaults
     $oidcSettings = [
@@ -278,6 +281,49 @@ $loginDisabledAllowed = $userCount == 1 && $settings['registrations_open'] == 0;
             </div>
         </div>
 
+    </section>
+
+    <section class="account-section">
+        <header>
+            <h2><?= translate('guacamole_settings', $i18n) ?></h2>
+        </header>
+        <div class="admin-form">
+            <div class="form-group-inline">
+                <input type="checkbox" id="guacamoleEnabled" <?= $guacamoleSettings['enabled'] ? 'checked' : '' ?> />
+                <label for="guacamoleEnabled"><?= translate('enable_guacamole_sso_redirect', $i18n) ?></label>
+            </div>
+            <div class="form-group">
+                <input type="text" id="guacamoleBaseUrl" placeholder="https://guac.example.com/guacamole/"
+                    autocomplete="off" value="<?= htmlspecialchars($guacamoleSettings['base_url']) ?>" />
+            </div>
+            <div class="form-group">
+                <input type="text" id="guacamoleLaunchUrlTemplate"
+                    placeholder="{base_url}/#/client/{connection_identifier_encoded}" autocomplete="off"
+                    value="<?= htmlspecialchars($guacamoleSettings['launch_url_template']) ?>" />
+            </div>
+            <div class="form-group-inline">
+                <input type="checkbox" id="guacamoleOpenInNewTab" <?= $guacamoleSettings['open_in_new_tab'] ? 'checked' : '' ?> />
+                <label for="guacamoleOpenInNewTab"><?= translate('open_console_in_new_tab', $i18n) ?></label>
+            </div>
+            <div class="settings-notes">
+                <p>
+                    <i class="fa-solid fa-circle-info"></i>
+                    <?= translate('guacamole_shared_sso_note', $i18n) ?>
+                </p>
+                <p>
+                    <i class="fa-solid fa-circle-info"></i>
+                    <?= translate('guacamole_template_note', $i18n) ?>
+                </p>
+                <p>
+                    <i class="fa-solid fa-circle-info"></i>
+                    <?= translate('guacamole_template_placeholders', $i18n) ?>
+                </p>
+            </div>
+            <div class="buttons">
+                <input type="submit" class="thin mobile-grow" value="<?= translate('save', $i18n) ?>"
+                    id="saveGuacamoleSettingsButton" onClick="saveGuacamoleSettingsButton()" />
+            </div>
+        </div>
     </section>
 
     <section class="account-section">
